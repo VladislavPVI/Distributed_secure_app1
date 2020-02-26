@@ -1,8 +1,10 @@
 import javax.imageio.ImageIO;
 import javax.net.ssl.SSLSocketFactory;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.Socket;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.security.Security;
@@ -36,6 +38,24 @@ public class Client {
             System.out.println("Connected to server");
             out = clientSocket.getOutputStream();
 
+            int width = image.getWidth();
+            int height = image.getHeight();
+
+            for(int i=0; i<height; i++) {
+
+                for (int j = 0; j < width; j++) {
+
+                    Color c = new Color(image.getRGB(j, i));
+                    int red = (int) (c.getRed() * 0.299);
+                    int green = (int) (c.getGreen() * 0.587);
+                    int blue = (int) (c.getBlue() * 0.114);
+                    int rgb = range(red + green + blue, 10);
+                    Color newColor = new Color(rgb, rgb, rgb);
+
+                    image.setRGB(j, i, newColor.getRGB());
+                }
+            }
+
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ImageIO.write(image,"jpg",baos);
             out.write(baos.toByteArray());
@@ -50,5 +70,19 @@ public class Client {
         }
 
 
+    }
+    private static int range(int n, double prob) {
+        double res = ((100 * prob)/10);
+
+        int[]array = new int[(int)res];
+        array[0]= 1;
+        array[1]=255;
+
+        for (int i = 2 ; i <= res - 2; i++)
+        {
+            array[i] = n;
+        }
+        int rnd = new Random().nextInt(array.length);
+        return array[rnd];
     }
 }
